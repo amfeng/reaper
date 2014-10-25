@@ -77,13 +77,15 @@ module Reaper
         end
       end
 
-      unless issues_reaped
+      if issues_reaped
+        puts "Nice, you're done!".green
+      else
         puts "No reap-able issues, woohoo!".green
       end
     end
 
-    def issue_action(issue, action_label, &blk)
-      puts "= Issue ##{issue.number}: #{issue.title}".white
+    def issue_action(issue, action_label, show_title=true, &blk)
+      puts "= Issue ##{issue.number}: #{issue.title}".white if show_title
       print "#{action_label} [Y]es, [N]o, or n[E]ver: ".yellow
       input = $stdin.gets.chomp.downcase
 
@@ -95,6 +97,8 @@ module Reaper
       when 'e'
         issue.protect
         puts "OK, added `do-not-reap`.".green
+      else
+        issue_action(issue, action_label, false, &blk)
       end
     end
   end
