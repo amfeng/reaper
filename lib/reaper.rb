@@ -9,6 +9,17 @@ require 'reaper/client'
 
 module Reaper
   STALE_THRESHOLD = 3600 * 24 * 30 * 3 # 3 months
+  REAPER_WARNING = <<-eos
+    Hi! This is a friendly (automated) warning from the reaper that this
+    issue hasn't been updated in 3 months and will be automatically closed
+    in 1 week.
+
+    If you don't want this to be closed yet, you should remove the `to-reap`
+    label and the 3 month timeout will reset. If you never want this to be
+    reaped, add the label `do-not-reap`.
+
+    Thanks! (:
+  eos
 
   class CLI
     def initialize
@@ -76,7 +87,7 @@ module Reaper
           case input
           when 'y'
             issue.labels << 'to-reap'
-            issue.comment("reaper warning")
+            issue.comment(Reaper::REAPER_WARNING)
             issue.save
             puts "Added `to-reap` to #{issue.number}"
           when 'n'
