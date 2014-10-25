@@ -14,15 +14,31 @@ module Reaper
       @client = Reaper::Client.instance
     end
 
-    def close
+    # Action methods
+
+    def reap
       @labels << 'reaped'
       @labels -= ['to-reap']
       @client.close_issue(@issue.number, labels: @labels)
     end
 
+    def warn(warning)
+      @labels << 'to-reap'
+      comment(warning)
+      save
+    end
+
+    def protect
+      @labels << 'do-not-reap'
+      @labels -= ['to-reap']
+      save
+    end
+
     def closed?
       @state == 'closed'
     end
+
+    private
 
     def comment(comment)
       @buffered_comments << comment

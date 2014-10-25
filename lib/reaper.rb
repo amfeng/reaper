@@ -60,20 +60,9 @@ module Reaper
           issues_reaped = true
           # TODO: Add force-all flag.
 
-          puts "= Issue ##{issue.number}: #{issue.title}".white
-          print "Close issue? [Y]es, [N]o, or n[E]ver: ".yellow
-          input = $stdin.gets.chomp.downcase
-          case input
-          when 'y'
-            issue.close
+          issue_action(issue, "Close issue?") do |issue|
+            issue.reap
             puts "Issue was reaped.".green
-          when 'n'
-            puts "OK, skipping.".red
-          when 'e'
-            issue.labels << 'do-not-reap'
-            issue.labels -= ['to-reap']
-            issue.save
-            puts "OK, added `do-not-reap`.".green
           end
         else
           # Break out of the whole loop if the issue's updated date is outside
@@ -81,29 +70,31 @@ module Reaper
           break if issue.updated_at > now - @stale_threshold
 
           issues_reaped = true
-          puts "= Issue ##{issue.number}: #{issue.title}".white
-          print "Add warning? [Y]es, [N]o, or n[E]ver: ".yellow
-          input = $stdin.gets.chomp.downcase
-
-          case input
-          when 'y'
-            issue.labels << 'to-reap'
-            issue.comment(Reaper::REAPER_WARNING)
-            issue.save
+          issue_action(issue, "Add warning?") do |issue|
+            issue.warn(Reaper::REAPER_WARNING)
             puts "Added `to-reap` to #{issue.number}"
-          when 'n'
-            puts "OK, skipping.".red
-          when 'e'
-            issue.labels << 'do-not-reap'
-            issue.labels -= ['to-reap']
-            issue.save
-            puts "OK, added `do-not-reap`.".green
           end
         end
       end
 
       unless issues_reaped
         puts "No reap-able issues, woohoo!".green
+      end
+    end
+
+    def issue_action(issue, action_label, &blk)
+      puts "= Issue ##{issue.number}: #{issue.title}".white
+      print "#{action_label} [Y]es, [N]o, or n[E]ver: ".yellow
+      input = $stdin.gets.chomp.downcase
+
+      case input
+      when 'y'
+        yield issue
+      when 'n'
+        puts "OK, skipping.".red
+      when 'e'
+        issue.protect
+        puts "OK, added `do-not-reap`.".green
       end
     end
   end
