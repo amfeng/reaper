@@ -1,6 +1,7 @@
 require 'octokit'
 require 'colorize'
 require 'time'
+require 'pry'
 
 class Reaper
   STALE_THRESHOLD = 3600 * 24 * 30 * 3 # 3 months
@@ -26,9 +27,11 @@ class Reaper
     }
 
     @client.list_issues(repo_path, options).each do |issue|
+      issue = Issue.new(issue)
+
       # Skip if this task has already been closed or has a do-not-reap tag.
-      next if issue.state == 'closed'
-      next if label_names(issue).include?('do-not-reap')
+      next if issue.closed?
+      next if issue.labels.include?('do-not-reap')
 
       # Break out of the whole loop if the issue's updated date is outside
       # the range.
@@ -40,10 +43,10 @@ class Reaper
       # customizable and not based on run-time of the reaper (e.g. running
       # reaper should be idempotent).
 
-      if label_names(issue).include?('to-reap')
+      if issue.labels.include?('to-reap')
         # TODO: Add force-all flag.
 
-        puts "Issue ##{issue.id}: #{issue.title}"
+        puts "Issue ##{issue.number}: #{issue.title}"
         print "Close issue? [Y]es, [N]o, or n[E]ver: ".yellow
         input = $stdin.gets.chomp.downcase
         case input
@@ -54,19 +57,46 @@ class Reaper
           puts "OK, skipping.".red
         when 'e'
           #issue.labels << 'do-not-reap'
+          #issue.save
           puts "OK, added `do-not-reap`.".green
         end
 
       else
         #issue.labels << 'to-reap'
-        #issue.comment "reaper warning"
+        #issue.comment("reaper warning")
+        #issue.save
         puts "Added `to-reap` to #{issue.number}"
       end
     end
   end
 
-  def label_names(issue)
-    issue.labels.map(&:name)
+  class Issue
+    attr_accessor :labels
+
+    def initialize(issue)
+      @issue = issue
+      @labels = issue.labels.map(&:name)
+    end
+
+    def close
+      # TODO
+    end
+
+    def closed?
+      @issue.state == 'closed'
+    end
+
+    def comment(comment)
+      # TODO
+    end
+
+    def save
+      # TODO
+    end
+
+    def method_missing(meth, *args, &block)
+      @issue.send(meth, *args, &block)
+    end
   end
 end
 
