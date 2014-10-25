@@ -4,6 +4,7 @@
 require 'colorize'
 require 'time'
 
+require 'reaper/version'
 require 'reaper/issue'
 require 'reaper/client'
 

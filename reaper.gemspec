@@ -3,7 +3,7 @@ require 'reaper/version'
 
 Gem::Specification.new do |s|
   s.name        = 'reaper'
-  s.version     = Todidnt::VERSION
+  s.version     = Reaper::VERSION
   s.summary     = 'Reaper'
   s.description = "Reaper helps find and close stale Github issues."
   s.authors     = ["Amber Feng"]
