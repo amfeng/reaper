@@ -8,7 +8,6 @@ require 'reaper/issue'
 require 'reaper/client'
 
 module Reaper
-  STALE_THRESHOLD = 3600 * 24 * 30 * 3 # 3 months
   REAPER_WARNING = <<-eos
     Hi! This is a friendly (automated) warning from the reaper that this
     issue hasn't been updated in 3 months and will be automatically closed
@@ -22,15 +21,17 @@ module Reaper
   eos
 
   class CLI
-    def initialize
+    def initialize(opts)
       @client = Reaper::Client.instance
+      @client.set_repo(opts[:repository])
+
+      @stale_threshold = 3600 * 24 * 30 * opts[:threshold]
     end
 
     def run!
-      repo_path = 'amfeng/reaper'
       now = Time.now
 
-      puts "Welcome to Reaper! ⟝⦆ (fetching from `#{repo_path}`)".white.bold
+      puts "Welcome to Reaper! ⟝⦆ (fetching from `#{@client.repo}`)".white.bold
 
       # Fetch issues in ascending updated order.
       options = {
@@ -77,7 +78,7 @@ module Reaper
         else
           # Break out of the whole loop if the issue's updated date is outside
           # the range.
-          break if issue.updated_at > now - Reaper::STALE_THRESHOLD
+          break if issue.updated_at > now - @stale_threshold
 
           issues_reaped = true
           puts "= Issue ##{issue.number}: #{issue.title}".white

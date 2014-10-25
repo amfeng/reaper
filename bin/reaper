@@ -1,5 +1,20 @@
 #!/usr/bin/env ruby
 
 require 'reaper'
+require 'slop'
 
-Reaper::CLI.new.run!
+command = nil
+opts = Slop.parse(ARGV, strict: true, help: true) do
+  on 'u', 'user=', 'Username for Github login credentials.'
+  on 'p', 'password=', 'Password for Github login credentials.'
+  on 'r', 'repository=', 'Repository to access, e.g "amfeng/reaper"'
+  on 't', 'threshold=', 'Number of months to set as reap threshold.', as: Integer, default: 3
+
+  on 'version', 'Print the version.' do
+    puts Reaper::VERSION
+    exit
+  end
+end
+
+
+Reaper::CLI.new(opts).run!

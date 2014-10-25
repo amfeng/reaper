@@ -16,6 +16,7 @@ GEM
     sawyer (0.5.5)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
+    slop (3.6.0)
 
 PLATFORMS
   ruby
@@ -24,3 +25,4 @@ DEPENDENCIES
   colorize
   octokit (~> 3.0)
   reaper!
+  slop (~> 3.6.0)
