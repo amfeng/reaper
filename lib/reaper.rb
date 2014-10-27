@@ -40,7 +40,7 @@ module Reaper
         direction: :asc
       }
 
-      issues = @client.list_issues
+      issues = @client.list_issues(options)
       issues_reaped = false
 
       issues.each do |issue|
