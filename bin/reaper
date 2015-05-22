@@ -5,8 +5,6 @@ require 'slop'
 
 command = nil
 opts = Slop.parse(ARGV, strict: true, help: true) do
-  on 'u', 'user=', 'Username for Github login credentials.'
-  on 'p', 'password=', 'Password for Github login credentials.'
   on 'r', 'repository=', 'Repository to access, e.g "amfeng/reaper"'
   on 't', 'threshold=', 'Number of months to set as reap threshold.', as: Integer, default: 3
   on 's', 'skip', 'Skip confirmation prompts.'
