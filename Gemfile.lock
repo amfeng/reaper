@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    reaper (0.0.1)
+    github-reaper (0.0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -23,6 +23,6 @@ PLATFORMS
 
 DEPENDENCIES
   colorize
+  github-reaper!
   octokit (~> 3.0)
-  reaper!
   slop (~> 3.6.0)

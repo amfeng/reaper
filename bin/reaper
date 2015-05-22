@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'reaper'
+require 'github-reaper'
 require 'slop'
 
 command = nil

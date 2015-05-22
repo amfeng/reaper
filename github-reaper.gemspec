@@ -2,7 +2,7 @@ $:.unshift(File.join(File.dirname(__FILE__), 'lib'))
 require 'reaper/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'reaper'
+  s.name        = 'github-reaper'
   s.version     = Reaper::VERSION
   s.summary     = 'Reaper'
   s.description = "Reaper helps find and close stale Github issues."
