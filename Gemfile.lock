@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    github-reaper (0.0.1)
+    github-reaper (0.0.2)
       colorize (= 0.7.3)
       octokit (= 3.4.2)
       slop (= 3.6.0)
