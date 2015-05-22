@@ -96,6 +96,8 @@ module Reaper
     end
 
     def issue_action(issue, action_label, show_title=true, &blk)
+      yield issue
+      return
       puts "= Issue ##{issue.number}: #{issue.title}".white if show_title
       print "#{action_label} [Y]es, [N]o, or n[E]ver: ".yellow
       input = $stdin.gets.chomp.downcase
