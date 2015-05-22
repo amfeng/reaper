@@ -9,6 +9,7 @@ opts = Slop.parse(ARGV, strict: true, help: true) do
   on 'p', 'password=', 'Password for Github login credentials.'
   on 'r', 'repository=', 'Repository to access, e.g "amfeng/reaper"'
   on 't', 'threshold=', 'Number of months to set as reap threshold.', as: Integer, default: 3
+  on 's', 'skip', 'Skip confirmation prompts.'
 
   on 'version', 'Print the version.' do
     puts Reaper::VERSION

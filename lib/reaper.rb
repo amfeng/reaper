@@ -27,6 +27,7 @@ module Reaper
       @client.set_repo(opts[:repository])
 
       @stale_threshold = 3600 * 24 * 30 * opts[:threshold]
+      @skip_confirm = opts[:skip]
     end
 
     def run!
@@ -48,7 +49,7 @@ module Reaper
         issue = Reaper::Issue.new(issue)
         # TODO: Add force-all flag.
 
-        issue_action(issue, "Close issue?") do |issue|
+        issue_action(issue, "Close issue?", @skip_confirm) do |issue|
           issue.reap
           puts "Issue was reaped.".green
         end
@@ -82,7 +83,7 @@ module Reaper
         break if issue.updated_at > now - @stale_threshold
 
         issues_reaped = true
-        issue_action(issue, "Add warning?") do |issue|
+        issue_action(issue, "Add warning?", @skip_confirm) do |issue|
           issue.warn(Reaper::REAPER_WARNING)
           puts "Added `to-reap` to #{issue.number}"
         end
@@ -95,9 +96,9 @@ module Reaper
       end
     end
 
-    def issue_action(issue, action_label, show_title=true, &blk)
-      yield issue
-      return
+    def issue_action(issue, action_label, skip_confirm=false, show_title=true, &blk)
+      return yield issue if skip_confirm
+
       puts "= Issue ##{issue.number}: #{issue.title}".white if show_title
       print "#{action_label} [Y]es, [N]o, or n[E]ver: ".yellow
       input = $stdin.gets.chomp.downcase
