@@ -33,6 +33,26 @@ module Reaper
       now = Time.now
 
       puts "Welcome to Reaper! ⟝⦆ (fetching from `#{@client.repo}`)".white.bold
+      issues_reaped = false
+
+      # Fetch to-reap issues.
+
+      options = {
+        labels: 'to-reap'
+      }
+
+      puts "Finding issues to reap..."
+      issues = @client.list_issues(options)
+      issues.each do |issue|
+        issues_reaped = true
+        issue = Reaper::Issue.new(issue)
+        # TODO: Add force-all flag.
+
+        issue_action(issue, "Close issue?") do |issue|
+          issue.reap
+          puts "Issue was reaped.".green
+        end
+      end
 
       # Fetch issues in ascending updated order.
       options = {
@@ -40,9 +60,8 @@ module Reaper
         direction: :asc
       }
 
+      puts "Finding next reapable issues..."
       issues = @client.list_issues(options)
-      issues_reaped = false
-
       issues.each do |issue|
         issue = Reaper::Issue.new(issue)
 
@@ -57,24 +76,15 @@ module Reaper
         # reaper should be idempotent).
 
         puts "\n"
-        if issue.labels.include?('to-reap')
-          issues_reaped = true
-          # TODO: Add force-all flag.
 
-          issue_action(issue, "Close issue?") do |issue|
-            issue.reap
-            puts "Issue was reaped.".green
-          end
-        else
-          # Break out of the whole loop if the issue's updated date is outside
-          # the range.
-          break if issue.updated_at > now - @stale_threshold
+        # Break out of the whole loop if the issue's updated date is outside
+        # the range.
+        break if issue.updated_at > now - @stale_threshold
 
-          issues_reaped = true
-          issue_action(issue, "Add warning?") do |issue|
-            issue.warn(Reaper::REAPER_WARNING)
-            puts "Added `to-reap` to #{issue.number}"
-          end
+        issues_reaped = true
+        issue_action(issue, "Add warning?") do |issue|
+          issue.warn(Reaper::REAPER_WARNING)
+          puts "Added `to-reap` to #{issue.number}"
         end
       end
 
