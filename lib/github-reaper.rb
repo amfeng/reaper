@@ -9,25 +9,28 @@ require 'reaper/issue'
 require 'reaper/client'
 
 module Reaper
-  REAPER_WARNING = <<-eos
-    Hi! This is a friendly (automated) warning from the reaper that this
-    issue hasn't been updated in 3 months and will be automatically closed
-    in 1 week.
-
-    If you don't want this to be closed yet, you should remove the `to-reap`
-    label and the 3 month timeout will reset. If you never want this to be
-    reaped, add the label `do-not-reap`.
-
-    Thanks! (:
-  eos
-
   class CLI
     def initialize(opts)
       @client = Reaper::Client.instance
       @client.set_repo(opts[:repository])
 
       @stale_threshold = 3600 * 24 * 30 * opts[:threshold]
+      stale_string = opts[:threshold] == 1 ? '1 month' : "#{opts[:threshold]} months"
+
+      @warning_delay = 3600 * 24 * opts[:delay]
+      warning_string = opts[:delay] == 1 ? '1 day' : "#{opts[:threshold]} days"
+
       @skip_confirm = opts[:skip]
+      @reaper_warning =
+        "Hi! This is a friendly (automated) warning from the reaper that " \
+        "this issue hasn't been updated in #{stale_string} and will be " \
+        "automatically closed in #{warning_string}." \
+        "\n\n" \
+        "If you don't want this to be closed yet, you should remove the " \
+        "`to-reap` label and the timeout will reset. If you never want this " \
+        "to be reaped, add the label `do-not-reap`." \
+        "\n\n" \
+        "Thanks! :)"
     end
 
     def run!
@@ -45,13 +48,24 @@ module Reaper
       puts "Finding issues to reap..."
       issues = @client.list_issues(options)
       issues.each do |issue|
-        issues_reaped = true
         issue = Reaper::Issue.new(issue)
-        # TODO: Add force-all flag.
 
+        # latest_event is slow so let's dot dot dot to indicate progress
+        print '.'
+        last_to_reap_event = issue.latest_event do |event|
+          event.event == 'labeled' && event.label.name == 'to-reap'
+        end
+        unless last_to_reap_event
+          puts "Race condition: no reap label on #{issue.number}"
+          next
+        end
+        next if last_to_reap_event.created_at > now - @warning_delay
+
+        issues_reaped = true
+        puts ""
         issue_action(issue, "Close issue?", @skip_confirm) do |issue|
           issue.reap
-          puts "Issue was reaped.".green
+          puts "Issue #{issue.number} was reaped.".green
         end
       end
 
@@ -84,7 +98,7 @@ module Reaper
 
         issues_reaped = true
         issue_action(issue, "Add warning?", @skip_confirm) do |issue|
-          issue.warn(Reaper::REAPER_WARNING)
+          issue.warn(@reaper_warning)
           puts "Added `to-reap` to #{issue.number}"
         end
       end
