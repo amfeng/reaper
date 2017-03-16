@@ -38,6 +38,23 @@ module Reaper
       @state == 'closed'
     end
 
+    # There's no way to sort issue events descending :(
+    # Find all instances of a type of event, take the last one
+    # Takes a block that determines if an event matches
+    def latest_event(&blk)
+      latest_event = nil
+      page = 1
+      count = 100
+      loop do
+        events = @client.issue_events(@issue.number, per_page: count, page: page)
+        matching_events = events.select(&blk)
+        latest_event = matching_events.last unless matching_events.empty?
+        page += 1
+        break if events.length < count
+      end
+      latest_event
+    end
+
     private
 
     def comment(comment)
